@@ -1,0 +1,156 @@
+Enter password: ********
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.37 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mydb2              |
+| mydb3              |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+6 rows in set (0.04 sec)
+
+ERROR:
+No query specified
+
+mysql> create database anisha;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> use anisha
+Database changed
+mysql> show tables;
+Empty set (0.03 sec)
+
+mysql> CREATE TABLE Dept (
+    ->     deptno INT PRIMARY KEY,
+    ->     dname VARCHAR(50),
+    ->     loc VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> use anisha
+Database changed
+mysql> show databases;;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mydb2              |
+| mydb3              |
+| mysql              |
+| anisha             |
+| performance_schema |
+| sys                |
++--------------------+
+7 rows in set (0.00 sec)
+
+ERROR:
+No query specified
+
+mysql> show tables;
++-----------------+
+| Tables_in_anisha|
++-----------------+
+| dept            |
++-----------------+
+1 row in set (0.02 sec)
+
+## 1. Create Dept table: Dept (deptno, dname, loc)
+
+mysql> CREATE TABLE Emp (
+    ->     empno INT PRIMARY KEY,
+    ->     ename VARCHAR(50),
+    ->     job VARCHAR(50),
+    ->     mgr INT,
+    ->     hiredate DATE,
+    ->     sal DECIMAL(10, 2),
+    ->     comm DECIMAL(10, 2),
+    ->     deptno INT,
+    ->     FOREIGN KEY (deptno) REFERENCES Dept(deptno),
+    ->     FOREIGN KEY (mgr) REFERENCES Emp(empno)
+    -> );
+Query OK, 0 rows affected (0.08 sec)
+
+2. Create Emp table: Emp (empno, ename, job, mgr, hiredate, sal, comm, deptno)
+
+mysql> -- Insert data into Dept table
+mysql> INSERT INTO Dept (deptno, dname, loc) VALUES (1, 'Sales', 'New York');
+Query OK, 1 row affected (0.03 sec)
+
+mysql> INSERT INTO Dept (deptno, dname, loc) VALUES (2, 'HR', 'Los Angeles');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> INSERT INTO Dept (deptno, dname, loc) VALUES (3, 'IT', 'San Francisco');
+Query OK, 1 row affected (0.00 sec)
+
+
+## 3. Insert data into Dept and Emp tables
+
+mysql> INSERT INTO Emp (empno, ename, job, mgr, hiredate, sal, comm, deptno) VALUES (101, 'John Doe', 'Manager', NULL, '1985-06-15', 75000, 5000, 1);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> INSERT INTO Emp (empno, ename, job, mgr, hiredate, sal, comm, deptno) VALUES (102, 'Jane Smith', 'Salesperson', 101, '1990-09-23', 60000, 4000, 1);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> INSERT INTO Emp (empno, ename, job, mgr, hiredate, sal, comm, deptno) VALUES (103, 'Michael Brown', 'Clerk', 101, '1995-02-11', 40000, 2000, 1);
+Query OK, 1 row affected (0.00 sec)
+
+4. Update the employee salary by 15%, whose experience is greater than 30 years
+
+mysql> UPDATE Emp
+    -> SET sal = sal * 1.15
+    -> WHERE TIMESTAMPDIFF(YEAR, hiredate, CURDATE()) > 30;
+Query OK, 2 rows affected (0.02 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+5. Delete the employees, who completed 30 years of service
+
+mysql> UPDATE Emp AS e
+    -> JOIN (
+    ->     SELECT empno
+    ->     FROM Emp
+    ->     WHERE TIMESTAMPDIFF(YEAR, hiredate, CURDATE()) >= 30
+    -> ) AS sub
+    -> ON e.mgr = sub.empno
+    -> SET e.mgr = NULL;
+Query OK, 2 rows affected (0.02 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+
+mysql> DELETE FROM Emp
+    -> WHERE TIMESTAMPDIFF(YEAR, hiredate, CURDATE()) >= 30;
+Query OK, 2 rows affected (0.02 sec)
+
+## 6. Display the manager who is having the maximum number of employees working under him
+
+mysql> SELECT mgr, COUNT(*) AS number_of_employees
+    -> FROM Emp
+    -> WHERE mgr IS NOT NULL
+    -> GROUP BY mgr
+    -> ORDER BY number_of_employees DESC
+    -> LIMIT 1;
+Empty set (0.00 sec)
+
+## 7. Create a view, which contains employee names and their manager
+
+mysql> CREATE VIEW EmpManager AS
+    -> SELECT e1.ename AS employee_name, e2.ename AS manager_name
+    -> FROM Emp e1
+    -> LEFT JOIN Emp e2 ON e1.mgr = e2.empno;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
